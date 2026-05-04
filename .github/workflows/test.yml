@@ -44,10 +44,14 @@ jobs:
       - name: just test
         run: just test
 
-      - name: dump coverage.json on failure
+      - name: inspect test binary on failure
         if: failure()
         run: |
-          echo "--- ls coverage ---"
-          ls -laR coverage || true
+          echo "--- file ---"
+          file zig-out/bin/sparea-test || true
+          echo "--- DWARF .debug_info head ---"
+          readelf --debug-dump=info zig-out/bin/sparea-test 2>&1 | head -40 || true
+          echo "--- ELF section list ---"
+          readelf -S zig-out/bin/sparea-test | grep -E "debug|name" || true
           echo "--- coverage.json ---"
           cat coverage/sparea-test.*/coverage.json || true

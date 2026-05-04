@@ -43,3 +43,11 @@ jobs:
 
       - name: just test
         run: just test
+
+      - name: dump coverage.json on failure
+        if: failure()
+        run: |
+          echo "--- ls coverage ---"
+          ls -laR coverage || true
+          echo "--- coverage.json ---"
+          cat coverage/sparea-test.*/coverage.json || true

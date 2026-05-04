@@ -8,7 +8,9 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Run on macOS so kcov uses libdwarf (which parses Zig 0.15+ DWARF 5);
+    # on Linux kcov uses libdw and reports 0% coverage on Zig binaries.
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
@@ -25,8 +27,8 @@ jobs:
         with:
           version: ${{ matrix.zig }}
 
-      # Coverage is enforced locally via `just test`. CI only verifies the
-      # suite runs across the Zig matrix — kcov on Linux uses libdw, which
-      # mis-parses Zig's DWARF 5 and reports 0% even when all tests run.
-      - name: zig build test
-        run: zig build test
+      - name: Install kcov + jq + just
+        run: brew install kcov jq just
+
+      - name: just test
+        run: just test

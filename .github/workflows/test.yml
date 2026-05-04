@@ -25,33 +25,8 @@ jobs:
         with:
           version: ${{ matrix.zig }}
 
-      - name: Install jq + kcov build deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq cmake libdw-dev libcurl4-openssl-dev binutils-dev libiberty-dev
-
-      - name: Build and install kcov v43
-        run: |
-          # apt kcov was dropped from Ubuntu 24.04, and the 22.04 version (38)
-          # is too old to read Zig's DWARF. Build from source.
-          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git /tmp/kcov
-          cmake -S /tmp/kcov -B /tmp/kcov/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build /tmp/kcov/build -j"$(nproc)"
-          sudo cmake --install /tmp/kcov/build
-
-      - uses: extractions/setup-just@v2
-
-      - name: just test
-        run: just test
-
-      - name: inspect test binary on failure
-        if: failure()
-        run: |
-          echo "--- file ---"
-          file zig-out/bin/sparea-test || true
-          echo "--- DWARF .debug_info head ---"
-          readelf --debug-dump=info zig-out/bin/sparea-test 2>&1 | head -40 || true
-          echo "--- ELF section list ---"
-          readelf -S zig-out/bin/sparea-test | grep -E "debug|name" || true
-          echo "--- coverage.json ---"
-          cat coverage/sparea-test.*/coverage.json || true
+      # Coverage is enforced locally via `just test`. CI only verifies the
+      # suite runs across the Zig matrix — kcov on Linux uses libdw, which
+      # mis-parses Zig's DWARF 5 and reports 0% even when all tests run.
+      - name: zig build test
+        run: zig build test

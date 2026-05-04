@@ -1,4 +1,4 @@
-# sparea
+# sparea: Spherical Polygon Area
 
 Zig library for the area (in steradians) of a polygon on the unit
 sphere. Two complementary algorithms with automatic dispatch based
@@ -11,7 +11,7 @@ Requires Zig **0.15.2** or newer (CI tests both 0.15.2 and 0.16.0).
 Fetch the package into your project:
 
 ```sh
-zig fetch --save https://github.com/ajfriend/sparea_zig/archive/refs/tags/v0.1.0.tar.gz
+zig fetch --save https://github.com/ajfriend/sparea_zig/archive/refs/tags/v0.2.0.tar.gz
 ```
 
 This writes a `.sparea` entry into your `build.zig.zon` with the

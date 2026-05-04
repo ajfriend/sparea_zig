@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        zig:
+          - "0.15.2"  # matches minimum_zig_version in build.zig.zon
+          - "0.16.0"  # latest stable
+          - "master"  # tracks Zig nightly; allowed to fail
+    continue-on-error: ${{ matrix.zig == 'master' }}
+    name: zig ${{ matrix.zig }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: ${{ matrix.zig }}
+
+      - name: Install kcov + jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y kcov jq
+
+      - uses: extractions/setup-just@v2
+
+      - name: just test
+        run: just test

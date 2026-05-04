@@ -32,5 +32,12 @@ jobs:
 
       - uses: extractions/setup-just@v2
 
+      - name: kcov version
+        run: kcov --version
+
       - name: just test
         run: just test
+
+      - name: list coverage dir on failure
+        if: failure()
+        run: ls -laR coverage || true

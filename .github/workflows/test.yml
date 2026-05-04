@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04  # jammy still ships the `kcov` apt package; removed from 24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -25,10 +25,19 @@ jobs:
         with:
           version: ${{ matrix.zig }}
 
-      - name: Install kcov + jq
+      - name: Install jq + kcov build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y kcov jq
+          sudo apt-get install -y jq cmake libdw-dev libcurl4-openssl-dev binutils-dev libiberty-dev
+
+      - name: Build and install kcov v43
+        run: |
+          # apt kcov was dropped from Ubuntu 24.04, and the 22.04 version (38)
+          # is too old to read Zig's DWARF. Build from source.
+          git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git /tmp/kcov
+          cmake -S /tmp/kcov -B /tmp/kcov/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/kcov/build -j"$(nproc)"
+          sudo cmake --install /tmp/kcov/build
 
       - uses: extractions/setup-just@v2
 

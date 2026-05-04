@@ -6,8 +6,8 @@ test:
     zig build install-test
     rm -rf coverage
     kcov --include-pattern=src/ coverage zig-out/bin/sparea-test
-    @jq -r '"sparea coverage: \(.percent_covered)%"' coverage/sparea-test/coverage.json
-    @jq -e '.percent_covered == "100.00"' coverage/sparea-test/coverage.json > /dev/null
+    @jq -r '"sparea coverage: \(.percent_covered)%"' coverage/sparea-test.*/coverage.json
+    @jq -e '.percent_covered == "100.00"' coverage/sparea-test.*/coverage.json > /dev/null
 
 # Build the library.
 build:

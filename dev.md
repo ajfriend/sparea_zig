@@ -86,14 +86,14 @@ pub const SpareaError = error{
 To add a new variant:
 
 1. Add it (with a doc-comment) to `SpareaError` in `root.zig`.
-2. `return error.NewVariant` from wherever in `polygon.zig` it applies.
+2. `return error.NewVariant` from wherever in `area.zig` it applies.
 3. Add a test that exercises the new error path (otherwise the
    coverage gate fails).
 4. If the C ABI exposes it, add an error code to
    `sparea_py/src/c_api.zig` and a Python exception class to
    `sparea_py/sparea/__init__.py`.
 
-Functions in `polygon.zig` use *inferred* error unions (`!f64`,
+Functions in `area.zig` use *inferred* error unions (`!f64`,
 `!void`) and `return error.X` directly — `error.X` is a global name,
 no import needed. Inferred unions are structurally equivalent to
 `SpareaError`, so callers can still spell the named type if they want.

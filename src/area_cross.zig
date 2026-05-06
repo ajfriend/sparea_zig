@@ -31,7 +31,7 @@ pub fn triangle_area(x: Vec3, y: Vec3, z: Vec3) f64 {
 /// great-circle rings and other polygons whose vertex sum
 /// cancels (the centroid is undefined and every fan-triangle
 /// from a `(0,0,0)` apex evaluates to `2·atan2(0, 1+y·z) = 0`).
-/// The dispatcher in `polygon.zig` checks for this case via
+/// The dispatcher in `area.zig` checks for this case via
 /// `is_hemisphere_contained` and routes such polygons to the
 /// angle formula instead. If you call `signed_area` directly
 /// on a global / non-hemispheric polygon, check that the

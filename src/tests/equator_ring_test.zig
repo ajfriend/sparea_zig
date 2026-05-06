@@ -10,10 +10,10 @@ const std = @import("std");
 const _vec3 = @import("../vec3.zig");
 const _angle = @import("../area_angle.zig");
 const _cross = @import("../area_cross.zig");
-const _polygon = @import("../polygon.zig");
+const _area = @import("../area.zig");
 
 const Vec3 = _vec3.Vec3;
-const normalize_positive = _polygon.normalize_positive;
+const normalize_positive = _area.normalize_positive;
 const pi = std.math.pi;
 
 const testing = std.testing;

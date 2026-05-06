@@ -2,7 +2,7 @@
 
 const builtin = @import("builtin");
 
-const _polygon = @import("polygon.zig");
+const _area = @import("area.zig");
 const _vec3 = @import("vec3.zig");
 const _latlng = @import("latlng.zig");
 
@@ -34,23 +34,25 @@ pub const SpareaError = error{
 /// library makes lives here. Tweaks happen in this one spot.
 pub const tol = struct {
     /// Squared-magnitude threshold for the antipodal-edge check.
-    /// `‖v_i + v_{i+1}‖²` must exceed this to be accepted; for
-    /// unit vectors this corresponds to angular distance < π −
-    /// √(2·ε) ≈ within ~0.0026° of antipodal.
-    pub const ANTIPODAL: f64 = 1.0e-9;
+    /// `‖v_i + v_{i+1}‖²` must exceed this to be accepted; for unit
+    /// vectors the corresponding angular rejection radius is
+    /// √ANTIPODAL ≈ 0.0316 rad (~1.81°) of antipodal.
+    pub const ANTIPODAL: f64 = 1.0e-3;
 
     /// Hemisphere-containment threshold for the auto-dispatch
     /// logic. A polygon takes the centroid-fan cross-product path
-    /// only if every vertex is at least this far (in dot product
-    /// against the centroid direction) from the equator of the
-    /// centroid hemisphere.
-    pub const HEMISPHERE: f64 = 1.0e-6;
+    /// only if every vertex's dot product against the centroid is
+    /// at least this large — i.e., the vertex sits at least
+    /// arcsin(HEMISPHERE) ≈ 1e-3 rad (~0.057°) inside the centroid
+    /// hemisphere. Vertices closer to the boundary route to the
+    /// angle formula.
+    pub const HEMISPHERE: f64 = 1.0e-3;
 };
 
 
 pub const Vec3 = _vec3.Vec3;
 pub const LatLng = _latlng.LatLng;
-pub const polygon_area = _polygon.polygon_area;
+pub const polygon_area = _area.polygon_area;
 
 
 test {

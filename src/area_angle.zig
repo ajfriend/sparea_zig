@@ -29,7 +29,7 @@
 //!
 //! We deliberately do *not* fold the angle-formula result here —
 //! callers that need a single canonical magnitude should pass
-//! the result through `polygon.normalize_positive` to get a
+//! the result through `area.normalize_positive` to get a
 //! value in `[0, 4π)`.
 
 const std = @import("std");

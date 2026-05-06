@@ -2,7 +2,7 @@
 //! triangulation but compute correctly via the angle formula (and
 //! via centroid-fan cross-product, since the centroid avoids putting
 //! an antipodal pair into any single fan triangle). These are the
-//! geometric reason the dispatcher in `polygon.zig` prefers the
+//! geometric reason the dispatcher in `area.zig` prefers the
 //! centroid-fan cross-product path and falls back to the angle
 //! formula for non-hemispheric polygons.
 //!

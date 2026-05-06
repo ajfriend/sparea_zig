@@ -55,7 +55,7 @@ that keep mattering and aren't obvious from the source.
   Reach for them via `tol.X`; don't introduce local `const`
   tolerances.
 - Errors are declared once in `src/root.zig` as `SpareaError`.
-  Functions in `polygon.zig` use inferred error unions (`!f64`)
+  Functions in `area.zig` use inferred error unions (`!f64`)
   and `return error.X` directly — `error.X` is a global name in
   Zig, no import needed.
 - The library is monolingual on `Vec3` — every entry point takes

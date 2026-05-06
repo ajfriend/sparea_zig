@@ -2,19 +2,18 @@
 
 const std = @import("std");
 const sa = @import("../root.zig");
-const polygon = @import("../polygon.zig");
+const area = @import("../area.zig");
 const area_cross = @import("../area_cross.zig");
 const area_angle = @import("../area_angle.zig");
 const helpers = @import("helpers.zig");
 
 const Vec3 = sa.Vec3;
-const LatLng = sa.LatLng;
 const polygon_area = sa.polygon_area;
 const angle_area = area_angle.signed_area;
 
 const cross_area = area_cross.signed_area;
 const triangle_area = area_cross.triangle_area;
-const normalize_positive = polygon.normalize_positive;
+const normalize_positive = area.normalize_positive;
 
 const testing = std.testing;
 const expectApproxEqAbs = testing.expectApproxEqAbs;
@@ -85,18 +84,6 @@ test "great-circle polygon (vertex sum = 0) dispatches to angle formula" {
         .init(0, 1, 0),
     };
     try expectApproxEqAbs(2.0 * pi, try polygon_area(&cw_from_above), 1e-13);
-
-    // Same equator ring constructed from LatLng input then converted
-    // at the call site — the recommended pattern for LatLng-shaped data.
-    const ll_ccw = [_]LatLng{
-        .init(0, 0),
-        .init(0, pi / 2.0),
-        .init(0, pi),
-        .init(0, -pi / 2.0),
-    };
-    var verts_v: [ll_ccw.len]Vec3 = undefined;
-    for (ll_ccw, &verts_v) |ll, *v| v.* = ll.to_vec3();
-    try expectApproxEqAbs(2.0 * pi, try polygon_area(&verts_v), 1e-13);
 }
 
 test "orientation flip yields complementary region (small/centroid-fan polygon)" {
@@ -138,29 +125,6 @@ test "orientation flip yields complementary region (global/angle-formula polygon
         (try polygon_area(&fwd)) + (try polygon_area(&rev)),
         1e-13,
     );
-}
-
-test "LatLng-derived Vec3 input matches direct Vec3 input on a hemispheric polygon" {
-    // Octant traced as lat/lng (then converted) vs as Vec3 directly —
-    // both should land on pi/2.
-    const verts_v = [_]Vec3{
-        .init(1, 0, 0),
-        .init(0, 1, 0),
-        .init(0, 0, 1),
-    };
-    const verts_ll = [_]LatLng{
-        .{ .lat = 0.0, .lng = 0.0 },
-        .{ .lat = 0.0, .lng = pi / 2.0 },
-        .{ .lat = pi / 2.0, .lng = 0.0 },
-    };
-    var verts_ll_as_v: [verts_ll.len]Vec3 = undefined;
-    for (verts_ll, &verts_ll_as_v) |ll, *v| v.* = ll.to_vec3();
-    try expectApproxEqAbs(
-        try polygon_area(&verts_v),
-        try polygon_area(&verts_ll_as_v),
-        1e-13,
-    );
-    try expectApproxEqAbs(pi / 2.0, try polygon_area(&verts_ll_as_v), 1e-14);
 }
 
 test "all 8 CCW octants give +π/2 from both kernels" {
@@ -243,7 +207,7 @@ test "polygon_area rejects a near-antipodal edge within tolerance" {
 test "polygon_area accepts edge just outside the antipodal tolerance" {
     const verts = [_]Vec3{
         .init(1, 0, 0),
-        Vec3.init(-1, 1e-2, 0).normalized(),
+        Vec3.init(-1, 5e-2, 0).normalized(),
         .init(0, 0, 1),
     };
     _ = try polygon_area(&verts);

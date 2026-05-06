@@ -1,7 +1,7 @@
 //! Polygon-area public functions: validation, dispatch, and the
-//! orientation-normalization helper. The Vec3 / cross / angle
-//! kernels they call live in vec3.zig, area_cross.zig,
-//! area_angle.zig respectively.
+//! orientation-normalization helper. The cross / angle kernels
+//! this dispatches into live in `area_cross.zig` and
+//! `area_angle.zig`.
 //!
 //! The error set itself (`SpareaError`) is declared in root.zig as
 //! the documented public surface; the functions here use inferred

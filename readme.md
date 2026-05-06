@@ -74,7 +74,7 @@ that `polygon_area` performs.
 - The kernel functions `area_cross.signed_area` /
   `area_angle.signed_area` return the *signed* value (positive for
   CCW as viewed from outside the sphere); pass through
-  `polygon.normalize_positive` to fold into `[0, 4π)`.
+  `area.normalize_positive` to fold into `[0, 4π)`.
 - `LatLng` stores latitude and longitude in **radians**.
 
 ## Errors

@@ -17,6 +17,36 @@ comptime {
     }
 }
 
+/// Algorithm selector for `polygon_area`.
+pub const Algorithm = enum {
+    /// Hemisphere-contained polygons take the centroid-fan
+    /// cross-product path; polygons that span more of the sphere
+    /// fall back to the per-edge angle formula. The default.
+    auto,
+    /// Force the Van Oosterom–Strackee centroid-fan cross-product
+    /// kernel. Numerically tight on hemisphere-contained polygons;
+    /// lossy on polygons whose centroid is ill-defined (great-circle
+    /// rings, polygons spanning > a hemisphere).
+    cross,
+    /// Force the Chamberlain–Duquette per-edge half-angle-latitude
+    /// kernel. Handles polygons spanning more than a hemisphere or
+    /// having non-adjacent antipodal vertices.
+    angle,
+};
+
+/// Options for `polygon_area`. Pass `.{}` to take all defaults.
+pub const Options = struct {
+    /// Which kernel to run. See `Algorithm`.
+    algo: Algorithm = .auto,
+    /// If true, return the raw signed kernel output (positive for
+    /// CCW-from-outside, negative otherwise). If false (default),
+    /// fold the result into `[0, 4π)` — so callers see the area of
+    /// the region the polygon's traversal encloses, regardless of
+    /// orientation. Reversing the vertex order on a `signed=false`
+    /// call yields the complementary region (`4π − interior`).
+    signed: bool = false,
+};
+
 /// Errors raised by the sparea library.
 pub const SpareaError = error{
     /// A consecutive pair of vertices is antipodal or near-antipodal,

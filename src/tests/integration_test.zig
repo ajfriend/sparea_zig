@@ -29,7 +29,7 @@ test "4-vertex polygon = two adjacent octants" {
         .init(0, 0, 1),
         .init(0, -1, 0),
     };
-    try expectApproxEqAbs(pi, try polygon_area(&verts), 1e-13);
+    try expectApproxEqAbs(pi, try polygon_area(&verts, .{}), 1e-13);
 }
 
 test "4-vertex polygon with non-adjacent antipodal vertices" {
@@ -39,7 +39,7 @@ test "4-vertex polygon with non-adjacent antipodal vertices" {
         .init(-1, 0, 0),
         .init(0, 0, 1),
     };
-    try expectApproxEqAbs(pi, try polygon_area(&verts), 1e-13);
+    try expectApproxEqAbs(pi, try polygon_area(&verts, .{}), 1e-13);
 }
 
 test "tight polygon dispatches to centroid-fan path" {
@@ -50,9 +50,9 @@ test "tight polygon dispatches to centroid-fan path" {
     };
     try testing.expectEqual(
         cross_area(&verts),
-        try polygon_area(&verts),
+        try polygon_area(&verts, .{}),
     );
-    try expectApproxEqAbs(pi / 2.0, try polygon_area(&verts), 1e-14);
+    try expectApproxEqAbs(pi / 2.0, try polygon_area(&verts, .{}), 1e-14);
 }
 
 test "angle formula matches centroid-fan on a non-degenerate hemispheric polygon" {
@@ -75,7 +75,7 @@ test "great-circle polygon (vertex sum = 0) dispatches to angle formula" {
         .init(-1, 0, 0),
         .init(0, -1, 0),
     };
-    try expectApproxEqAbs(2.0 * pi, try polygon_area(&ccw_from_above), 1e-13);
+    try expectApproxEqAbs(2.0 * pi, try polygon_area(&ccw_from_above, .{}), 1e-13);
 
     const cw_from_above = [_]Vec3{
         .init(1, 0, 0),
@@ -83,7 +83,7 @@ test "great-circle polygon (vertex sum = 0) dispatches to angle formula" {
         .init(-1, 0, 0),
         .init(0, 1, 0),
     };
-    try expectApproxEqAbs(2.0 * pi, try polygon_area(&cw_from_above), 1e-13);
+    try expectApproxEqAbs(2.0 * pi, try polygon_area(&cw_from_above, .{}), 1e-13);
 }
 
 test "orientation flip yields complementary region (small/centroid-fan polygon)" {
@@ -101,7 +101,7 @@ test "orientation flip yields complementary region (small/centroid-fan polygon)"
     // magnitudes sum to 4π.
     try expectApproxEqAbs(
         4.0 * pi,
-        (try polygon_area(&fwd)) + (try polygon_area(&rev)),
+        (try polygon_area(&fwd, .{})) + (try polygon_area(&rev, .{})),
         1e-13,
     );
 }
@@ -122,7 +122,7 @@ test "orientation flip yields complementary region (global/angle-formula polygon
     // Equator ring: each orientation encloses one hemisphere (2π).
     try expectApproxEqAbs(
         4.0 * pi,
-        (try polygon_area(&fwd)) + (try polygon_area(&rev)),
+        (try polygon_area(&fwd, .{})) + (try polygon_area(&rev, .{})),
         1e-13,
     );
 }
@@ -175,13 +175,13 @@ test "all 8 octants have area pi/2" {
         const j = (i + 1) % 4;
 
         const north_v = [_]Vec3{ np_v, eq_v[i], eq_v[j] };
-        try expectApproxEqAbs(pi / 2.0, @abs(try polygon_area(&north_v)), 1e-14);
+        try expectApproxEqAbs(pi / 2.0, @abs(try polygon_area(&north_v, .{})), 1e-14);
 
         const south_v = [_]Vec3{ sp_v, eq_v[j], eq_v[i] };
-        try expectApproxEqAbs(pi / 2.0, @abs(try polygon_area(&south_v)), 1e-14);
+        try expectApproxEqAbs(pi / 2.0, @abs(try polygon_area(&south_v, .{})), 1e-14);
 
-        total += @abs(try polygon_area(&north_v));
-        total += @abs(try polygon_area(&south_v));
+        total += @abs(try polygon_area(&north_v, .{}));
+        total += @abs(try polygon_area(&south_v, .{}));
     }
     try expectApproxEqAbs(4.0 * pi, total, 1e-13);
 }
@@ -192,7 +192,7 @@ test "polygon_area rejects an exactly-antipodal edge" {
         .init(-1, 0, 0),
         .init(0, 0, 1),
     };
-    try testing.expectError(error.AntipodalEdge, polygon_area(&verts));
+    try testing.expectError(error.AntipodalEdge, polygon_area(&verts, .{}));
 }
 
 test "polygon_area rejects a near-antipodal edge within tolerance" {
@@ -201,7 +201,7 @@ test "polygon_area rejects a near-antipodal edge within tolerance" {
         Vec3.init(-1, 1e-7, 0).normalized(),
         .init(0, 0, 1),
     };
-    try testing.expectError(error.AntipodalEdge, polygon_area(&verts));
+    try testing.expectError(error.AntipodalEdge, polygon_area(&verts, .{}));
 }
 
 test "polygon_area accepts edge just outside the antipodal tolerance" {
@@ -210,18 +210,82 @@ test "polygon_area accepts edge just outside the antipodal tolerance" {
         Vec3.init(-1, 5e-2, 0).normalized(),
         .init(0, 0, 1),
     };
-    _ = try polygon_area(&verts);
+    _ = try polygon_area(&verts, .{});
 }
 
 test "polygon_area rejects polygons with fewer than 3 vertices" {
     const empty = [_]Vec3{};
-    try testing.expectError(error.TooFewVertices, polygon_area(&empty));
+    try testing.expectError(error.TooFewVertices, polygon_area(&empty, .{}));
 
     const one = [_]Vec3{.init(1, 0, 0)};
-    try testing.expectError(error.TooFewVertices, polygon_area(&one));
+    try testing.expectError(error.TooFewVertices, polygon_area(&one, .{}));
 
     const two = [_]Vec3{ .init(1, 0, 0), .init(0, 1, 0) };
-    try testing.expectError(error.TooFewVertices, polygon_area(&two));
+    try testing.expectError(error.TooFewVertices, polygon_area(&two, .{}));
+}
+
+test "algo=.cross forces the cross-product kernel" {
+    // Hemisphere-contained polygon — auto would pick cross anyway, so
+    // the result must match cross_area + normalize_positive.
+    const verts = [_]Vec3{
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
+    };
+    try testing.expectEqual(
+        normalize_positive(cross_area(&verts)),
+        try polygon_area(&verts, .{ .algo = .cross }),
+    );
+    try expectApproxEqAbs(pi / 2.0, try polygon_area(&verts, .{ .algo = .cross }), 1e-14);
+}
+
+test "algo=.angle forces the angle-formula kernel even on hemisphere polygons" {
+    // Hemisphere-contained polygon — auto would pick cross. Forcing
+    // .angle should still produce the right area, matching the angle
+    // kernel's signed output normalized into [0, 4π).
+    const verts = [_]Vec3{
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
+    };
+    try testing.expectEqual(
+        normalize_positive(angle_area(&verts)),
+        try polygon_area(&verts, .{ .algo = .angle }),
+    );
+    try expectApproxEqAbs(pi / 2.0, try polygon_area(&verts, .{ .algo = .angle }), 1e-13);
+}
+
+test "algo=.cross still validates antipodal edges and vertex count" {
+    const antipodal = [_]Vec3{
+        .init(1, 0, 0),
+        .init(-1, 0, 0),
+        .init(0, 0, 1),
+    };
+    try testing.expectError(error.AntipodalEdge, polygon_area(&antipodal, .{ .algo = .cross }));
+
+    const two = [_]Vec3{ .init(1, 0, 0), .init(0, 1, 0) };
+    try testing.expectError(error.TooFewVertices, polygon_area(&two, .{ .algo = .angle }));
+}
+
+test "signed=true returns the raw kernel value, including negatives" {
+    const fwd = [_]Vec3{
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
+    };
+    const rev = [_]Vec3{
+        .init(0, 0, 1),
+        .init(0, 1, 0),
+        .init(1, 0, 0),
+    };
+    // CCW from outside = +π/2; CW = −π/2 (the kernel-native value,
+    // pre-fold). The two sum to zero, in contrast with the default
+    // `signed=false` mode where they sum to 4π.
+    const fwd_s = try polygon_area(&fwd, .{ .signed = true });
+    const rev_s = try polygon_area(&rev, .{ .signed = true });
+    try expectApproxEqAbs(pi / 2.0, fwd_s, 1e-14);
+    try expectApproxEqAbs(-pi / 2.0, rev_s, 1e-14);
+    try expectApproxEqAbs(0.0, fwd_s + rev_s, 1e-14);
 }
 
 test "centroid-fan beats v0-fan on a strict-hemisphere polygon with non-adjacent near-antipodal vertices" {

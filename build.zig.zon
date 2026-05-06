@@ -1,6 +1,6 @@
 .{
     .name = .sparea,
-    .version = "0.2.1",
+    .version = "0.3.0",
     .fingerprint = 0x3376dc7785f58939, // Changing this has security and trust implications.
     .minimum_zig_version = "0.15.2",
     .dependencies = .{},

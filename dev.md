@@ -115,3 +115,49 @@ pub const tol = struct {
 
 When you add a tolerance, add it here, not as a local `const` next to
 its use site.
+
+## Publishing a release
+
+Zig has no central package registry. Releases here are just git tags
+plus a GitHub Release with prose notes; downstream consumers point
+their `build.zig.zon` at the tag's auto-generated tarball URL and
+pin its content hash via `zig fetch --save`.
+
+Steps:
+
+1. Bump `.version` in `build.zig.zon` (e.g. `"0.3.0"`) and commit
+   with a message like `Bump to v0.3.0`. Push to `main`.
+2. Wait for CI to go green on the bump commit.
+3. In the GitHub UI: **Releases → Draft a new release**.
+   - **Tag**: `vX.Y.Z` (matching the `.version` field). Choose
+     "Create new tag on publish" — the tag does not need to exist
+     beforehand.
+   - **Target**: `main`.
+   - **Title**: `vX.Y.Z`.
+   - **Notes**: a short prose paragraph describing user-visible
+     changes. Match the style of prior releases — no headers, no
+     auto-generated changelog, just plain prose.
+   - Click **Publish release**.
+
+That's it on this side. GitHub generates the tarball at
+`https://github.com/ajfriend/sparea_zig/archive/refs/tags/vX.Y.Z.tar.gz`
+automatically.
+
+### Updating downstream
+
+In `sparea_py` (or any other consumer), bump the dep:
+
+```
+zig fetch --save https://github.com/ajfriend/sparea_zig/archive/refs/tags/vX.Y.Z.tar.gz
+```
+
+`zig fetch --save` rewrites the `.url` and `.hash` for the `sparea`
+entry in the consumer's `build.zig.zon`. Commit that change.
+
+### Tag immutability
+
+Once a release is published, treat the tag as append-only. Deleting
+and recreating a tag at a different SHA changes the tarball bytes,
+which changes its hash, which breaks every consumer that pinned the
+old hash. If a release ships with a bug, fix-forward with `vX.Y.(Z+1)`
+— never repoint an existing tag.

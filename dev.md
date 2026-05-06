@@ -36,8 +36,6 @@ exempt — dead test helpers are dead code too.
 What "100% line coverage" buys you:
 
 - Every line in every shipped function is reached by some test.
-- Generic instantiations (`Vec3T(f64)`, `Vec3T(f128)`) appear as
-  separate functions in DWARF; each is exercised by appropriate tests.
 - `comptime` branches that aren't realized at runtime don't appear in
   the binary, so they don't show as uncovered — Zig's comptime is
   naturally well-suited to line coverage.

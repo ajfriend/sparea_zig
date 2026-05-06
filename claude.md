@@ -15,9 +15,15 @@ that keep mattering and aren't obvious from the source.
 - Terse. Don't summarize what the diff already shows.
 - Push back on over-engineering. Things this user has explicitly
   rejected during the project's history:
-  - Stable-norm scaffolding on `Vec3T.norm` (every Vec3 here is a
+  - Stable-norm scaffolding on `Vec3.norm` (every Vec3 here is a
     unit vector or small sum thereof; scaled-by-max wasn't earning
     its 12 lines).
+  - Genericity over float precision (`Vec3T(T)`, `AdderT(T)`,
+    `comptime T` threading down to an f128 reference path).
+    Removed in favor of plain f64; the compensated-summation
+    pipeline (`Adder`, `diff_of_products`) carries the precision
+    the f128 reference used to verify, and the f128 cross-checks
+    weren't earning their surface area.
   - SoA / XYZ parallel entry points (deleted — not currently
     motivated, and they doubled the surface of every check /
     analyze helper).
@@ -35,13 +41,9 @@ that keep mattering and aren't obvious from the source.
   triangle; polygon via centroid-fan) and `angle` (Chamberlain–
   Duquette per-edge half-angle-latitude formula). Don't reintroduce
   "VOS" or "Cagnoli" outside of attribution comments.
-- `Vec3T(T)` is generic over precision; `Vec3 = Vec3T(f64)` is
-  the only convenience alias. Other instantiations (e.g.
-  `Vec3T(f128)` for the high-precision reference path) are
-  produced on demand by `area_cross.signed_area(f128, …)` or
-  `triangle_area(f128, …)` — no top-level `Vec3F128` const.
-  Same shape for `AdderT(T)` / `Adder` (compensated summation,
-  Kahan-Babuška-Neumaier).
+- `Vec3` and `Adder` (compensated summation, Kahan-Babuška-
+  Neumaier) are plain f64 structs. See the rejected-genericity
+  bullet above — don't reintroduce a `Vec3T(T)` / `AdderT(T)` shape.
 - Local accumulator variables stay named `sum` even though the
   type is `Adder` — name describes what's being computed, not
   what's being held.
@@ -56,13 +58,21 @@ that keep mattering and aren't obvious from the source.
   Functions in `polygon.zig` use inferred error unions (`!f64`)
   and `return error.X` directly — `error.X` is a global name in
   Zig, no import needed.
-- Vec3 ↔ LatLng conversions live in `vertex.zig` behind a single
-  `vertex.as(comptime To, v) To` — caller writes the target type
-  and the function picks the right path at compile time. Kept
-  out of `vec3.zig` and `latlng.zig` so neither type module
-  depends on the other. `inline fn` + comptime branches → zero
-  runtime cost; lowered code at each call site is exactly the
-  bare conversion.
+- The library is monolingual on `Vec3` — every entry point takes
+  `[]const Vec3` (no `verts: anytype`). Callers with `LatLng`-shaped
+  data convert once at the call site via `ll.to_vec3()`. The
+  `verts: anytype` shape used to be there but was removed: it
+  doubled the surface of every entry point and caused the
+  `LatLng → Vec3` trig conversion to repeat ~7× per vertex per
+  `polygon_area` call.
+- Vec3 ↔ LatLng conversions, plus the spherical centroid, are
+  methods on the structs themselves: `Vec3.to_lat_lng`,
+  `Vec3.centroid([]const Vec3)`, and `LatLng.to_vec3`. There used
+  to be a `vertex.zig` module holding free functions — it was
+  removed once everything fit naturally on one struct or the other.
+  The mutual imports between `vec3.zig` and `latlng.zig` are fine:
+  Zig handles cyclic imports as long as struct definitions
+  themselves aren't cyclic.
 - `LatLng` stores radians, not degrees. A literal `-10.0` in `.lat`
   is -10 radians (out of range); convert from degrees when working
   with human-friendly numbers.

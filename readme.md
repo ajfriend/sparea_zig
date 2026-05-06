@@ -33,16 +33,22 @@ Now `@import("sparea")` is available in your sources.
 const std = @import("std");
 const sa = @import("sparea");
 
-const verts = [_]sa.LatLng{
-    .init(0.0, 0.0),
-    .init(0.0, std.math.pi / 2.0),
-    .init(std.math.pi / 2.0, 0.0),
+const verts = [_]sa.Vec3{
+    sa.Vec3.init(1, 0, 0),
+    sa.Vec3.init(0, 1, 0),
+    sa.Vec3.init(0, 0, 1),
 };
-const area = try sa.polygon_area(f64, &verts); // π/2
+const area = try sa.polygon_area(&verts); // π/2
 ```
 
-`polygon_area` accepts a slice of `Vec3` *or* `LatLng` —
-comptime-dispatched on the element type, no runtime branch.
+`polygon_area` takes `[]const Vec3`. If your data is
+`LatLng`-shaped, convert at the call site:
+
+```zig
+var verts_v: [N]sa.Vec3 = undefined;
+for (verts_ll, &verts_v) |ll, *v| v.* = ll.to_vec3();
+const area = try sa.polygon_area(&verts_v);
+```
 
 ## Algorithms
 
@@ -55,10 +61,9 @@ comptime-dispatched on the element type, no runtime branch.
 
 `polygon_area` auto-dispatches between the two based on a
 hemisphere-containment check. To force one path explicitly, call
-`area_cross.signed_area(comptime T, verts)` or
-`area_angle.signed_area(verts)` directly — they skip the
-antipodal-edge / vertex-count validation that `polygon_area`
-performs.
+`area_cross.signed_area(verts)` or `area_angle.signed_area(verts)`
+directly — they skip the antipodal-edge / vertex-count validation
+that `polygon_area` performs.
 
 ## Conventions
 
@@ -71,26 +76,6 @@ performs.
   CCW as viewed from outside the sphere); pass through
   `polygon.normalize_positive` to fold into `[0, 4π)`.
 - `LatLng` stores latitude and longitude in **radians**.
-
-## Performance note for LatLng input
-
-The library forbids allocations, so it can't cache the
-`LatLng → Vec3` conversion. On the cross-product path each input
-vertex gets converted ~7× per `polygon_area` call (validation,
-hemisphere check, centroid pass, per-edge triangle math) — about
-~28 trig ops per vertex vs the theoretical minimum of ~4. Vec3
-input has no such overhead (the conversion is identity).
-
-If you call `polygon_area` repeatedly on the same LatLng polygon,
-convert it to `Vec3` once at your call site:
-
-```zig
-var verts_v: [N]sa.Vec3 = undefined;
-for (verts_ll, &verts_v) |ll, *v| v.* = sa.vertex.as(sa.Vec3, ll);
-const area = try sa.polygon_area(f64, &verts_v);
-```
-
-For one-shot LatLng calls the overhead doesn't matter.
 
 ## Errors
 

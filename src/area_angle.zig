@@ -33,10 +33,11 @@
 //! value in `[0, 4π)`.
 
 const std = @import("std");
+const vec3 = @import("vec3.zig");
 const latlng = @import("latlng.zig");
-const vertex = @import("vertex.zig");
 const adder = @import("adder.zig");
 
+const Vec3 = vec3.Vec3;
 const LatLng = latlng.LatLng;
 const Adder = adder.Adder;
 
@@ -54,21 +55,18 @@ pub fn edge_area(a: LatLng, b: LatLng) f64 {
     return -2.0*std.math.atan2(sa*sd, sa*cd + ca);
 }
 
-/// Per-edge sum over a polygon's vertices. Accepts a slice of
-/// `Vec3` *or* `LatLng` — `vertex.as` resolves the per-edge
-/// conversion at compile time, so the Vec3 path costs one
-/// `to_lat_lng()` per vertex per pass. Returns the raw signed value
-/// (reversing the polygon's orientation negates the result). No
-/// antipodal-edge validation; caller is responsible. Always
+/// Per-edge sum over a polygon's vertices. Returns the raw signed
+/// value (reversing the polygon's orientation negates the result).
+/// No antipodal-edge validation; caller is responsible. Always
 /// succeeds for valid input — the angle formula has no failure
-/// modes (matches `area_cross.signed_area`'s plain-`f64` return).
-pub fn signed_area(verts: anytype) f64 {
+/// modes.
+pub fn signed_area(verts: []const Vec3) f64 {
     var sum = Adder.init();
-    for (0..verts.len) |i| {
-        const j = (i + 1) % verts.len;
-        const vi = vertex.as(LatLng, verts[i]);
-        const vj = vertex.as(LatLng, verts[j]);
-        sum.add(edge_area(vi, vj));
+    var prev = verts[verts.len - 1].to_lat_lng();
+    for (verts) |v| {
+        const cur = v.to_lat_lng();
+        sum.add(edge_area(prev, cur));
+        prev = cur;
     }
     return sum.value();
 }

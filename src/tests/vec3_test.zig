@@ -19,7 +19,7 @@ test "Vec3 dot and cross on basis vectors" {
 }
 
 test "diff_of_products agrees with naive on well-separated operands" {
-    const got = vec3.diff_of_products(f64, 3.0, 5.0, 2.0, 7.0); // 15 - 14 = 1
+    const got = vec3.diff_of_products(3.0, 5.0, 2.0, 7.0); // 15 - 14 = 1
     try testing.expectEqual(@as(f64, 1.0), got);
 }
 

@@ -2,7 +2,6 @@ const std = @import("std");
 const adder = @import("../adder.zig");
 
 const Adder = adder.Adder;
-const AdderT = adder.AdderT;
 const testing = std.testing;
 
 test "Adder recovers cancelled small term" {
@@ -23,12 +22,4 @@ test "Adder of many 0.1s is exact to high precision" {
 test "Adder on empty input is zero" {
     const s = Adder.init();
     try testing.expectEqual(@as(f64, 0.0), s.value());
-}
-
-test "AdderT(f128) tracks compensation in extended precision" {
-    var s = AdderT(f128).init();
-    s.add(@as(f128, 1.0e16));
-    s.add(@as(f128, 1.0));
-    s.add(@as(f128, -1.0e16));
-    try testing.expectEqual(@as(f128, 1.0), s.value());
 }

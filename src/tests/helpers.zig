@@ -24,7 +24,7 @@ pub fn vertex_fan_area(verts: []const Vec3, apex_idx: usize) f64 {
     while (i + 1 < verts.len) : (i += 1) {
         const a = (apex_idx + i) % verts.len;
         const b = (apex_idx + i + 1) % verts.len;
-        sum.add(area_cross.triangle_area(f64, apex, verts[a], verts[b]));
+        sum.add(area_cross.triangle_area(apex, verts[a], verts[b]));
     }
     return sum.value();
 }

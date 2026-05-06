@@ -3,31 +3,25 @@
 /// error so the final total `s + c` is correct to ~1 ulp regardless of
 /// summation order, even when intermediate values dominate the running
 /// sum.
-pub fn AdderT(comptime T: type) type {
-    return struct {
-        const Self = @This();
+pub const Adder = struct {
+    s: f64 = 0.0,
+    c: f64 = 0.0,
 
-        s: T = 0.0,
-        c: T = 0.0,
+    pub fn init() Adder {
+        return .{};
+    }
 
-        pub fn init() Self {
-            return .{};
+    pub fn add(self: *Adder, x: f64) void {
+        const t = self.s + x;
+        if (@abs(self.s) >= @abs(x)) {
+            self.c += (self.s - t) + x;
+        } else {
+            self.c += (x - t) + self.s;
         }
+        self.s = t;
+    }
 
-        pub fn add(self: *Self, x: T) void {
-            const t = self.s + x;
-            if (@abs(self.s) >= @abs(x)) {
-                self.c += (self.s - t) + x;
-            } else {
-                self.c += (x - t) + self.s;
-            }
-            self.s = t;
-        }
-
-        pub fn value(self: Self) T {
-            return self.s + self.c;
-        }
-    };
-}
-
-pub const Adder = AdderT(f64);
+    pub fn value(self: Adder) f64 {
+        return self.s + self.c;
+    }
+};

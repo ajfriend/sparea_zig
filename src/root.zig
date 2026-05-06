@@ -30,16 +30,6 @@ pub const SpareaError = error{
     TooFewVertices,
 };
 
-pub const Vec3 = _vec3.Vec3;
-pub const LatLng = _latlng.LatLng;
-pub const polygon_area = _polygon.polygon_area;
-
-/// Vec3 ↔ LatLng coercion. Re-exported so callers can pre-convert
-/// LatLng polygons to Vec3 once when calling `polygon_area`
-/// repeatedly on the same geometry — the cross path otherwise
-/// re-runs the LatLng→Vec3 trig several times per vertex per call.
-pub const vertex = @import("vertex.zig");
-
 /// Tolerance constants — every numerical-judgment choice the
 /// library makes lives here. Tweaks happen in this one spot.
 pub const tol = struct {
@@ -50,12 +40,18 @@ pub const tol = struct {
     pub const ANTIPODAL: f64 = 1.0e-9;
 
     /// Hemisphere-containment threshold for the auto-dispatch
-    /// logic. A polygon takes the high-precision centroid-fan
-    /// cross-product path only if every vertex is at least this
-    /// far (in dot product against the centroid direction) from
-    /// the equator of the centroid hemisphere.
+    /// logic. A polygon takes the centroid-fan cross-product path
+    /// only if every vertex is at least this far (in dot product
+    /// against the centroid direction) from the equator of the
+    /// centroid hemisphere.
     pub const HEMISPHERE: f64 = 1.0e-6;
 };
+
+
+pub const Vec3 = _vec3.Vec3;
+pub const LatLng = _latlng.LatLng;
+pub const polygon_area = _polygon.polygon_area;
+
 
 test {
     _ = @import("tests/all.zig");

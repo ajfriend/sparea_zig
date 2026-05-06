@@ -7,12 +7,12 @@
 //! one hemisphere — area = 2π sr.
 
 const std = @import("std");
-const _root = @import("../root.zig");
+const _vec3 = @import("../vec3.zig");
 const _angle = @import("../area_angle.zig");
 const _cross = @import("../area_cross.zig");
 const _polygon = @import("../polygon.zig");
 
-const LatLng = _root.LatLng;
+const Vec3 = _vec3.Vec3;
 const normalize_positive = _polygon.normalize_positive;
 const pi = std.math.pi;
 
@@ -22,17 +22,15 @@ test "equator ring (CCW from above): signed = -2pi, |area| = 2pi" {
     // CCW as viewed from the north pole = CW as viewed from outside
     // the sphere on the northern side, so the signed result is
     // negative. `normalize_positive` adds 4π to recover the magnitude.
-    const verts = [_]LatLng{
-        .init(0,0),
-        .init(0, pi/2.0),
-        .init(0, pi),
-        .init(0, -pi/2.0),
+    const verts = [_]Vec3{
+        Vec3.init(1, 0, 0),
+        Vec3.init(0, 1, 0),
+        Vec3.init(-1, 0, 0),
+        Vec3.init(0, -1, 0),
     };
     const signed = _angle.signed_area(&verts);
     try testing.expectApproxEqAbs(-2.0 * pi, signed, 1e-13);
-    // try testing.expectApproxEqAbs(2.0 * pi, normalize_positive(signed), 1e-13);
 }
-
 
 test "bigger ring: angle and cross agree after normalize_positive" {
     // Square ring at lat = +9°. The angle formula returns its raw
@@ -42,21 +40,23 @@ test "bigger ring: angle and cross agree after normalize_positive" {
     // `normalize_positive` collapses the [−2π, 2π] and [2π, 4π) (or
     // [−4π, −2π]) representations into a single value in [0, 4π).
     const lat = 0.1 * pi / 2.0;
-    const ccw = [_]LatLng{
-        .init(lat, 0),
-        .init(lat, pi / 2.0),
-        .init(lat, pi),
-        .init(lat, -pi / 2.0),
+    const cl = @cos(lat);
+    const sl = @sin(lat);
+    const ccw = [_]Vec3{
+        Vec3.init(cl, 0, sl),
+        Vec3.init(0, cl, sl),
+        Vec3.init(-cl, 0, sl),
+        Vec3.init(0, -cl, sl),
     };
-    const cw = [_]LatLng{
-        .init(lat, 0),
-        .init(lat, -pi / 2.0),
-        .init(lat, pi),
-        .init(lat, pi / 2.0),
+    const cw = [_]Vec3{
+        Vec3.init(cl, 0, sl),
+        Vec3.init(0, -cl, sl),
+        Vec3.init(-cl, 0, sl),
+        Vec3.init(0, cl, sl),
     };
 
     const a_ccw = _angle.signed_area(&ccw);
-    const c_ccw = _cross.signed_area(f64, &ccw);
+    const c_ccw = _cross.signed_area(&ccw);
     try testing.expectApproxEqAbs(
         normalize_positive(c_ccw),
         normalize_positive(a_ccw),
@@ -64,7 +64,7 @@ test "bigger ring: angle and cross agree after normalize_positive" {
     );
 
     const a_cw = _angle.signed_area(&cw);
-    const c_cw = _cross.signed_area(f64, &cw);
+    const c_cw = _cross.signed_area(&cw);
     try testing.expectApproxEqAbs(
         normalize_positive(c_cw),
         normalize_positive(a_cw),
@@ -73,11 +73,11 @@ test "bigger ring: angle and cross agree after normalize_positive" {
 }
 
 test "equator ring reversed: signed = +2pi" {
-    const verts = [_]LatLng{
-        .init(0,0),
-        .init(0, -pi/2.0),
-        .init(0, pi),
-        .init(0, pi/2.0),
+    const verts = [_]Vec3{
+        Vec3.init(1, 0, 0),
+        Vec3.init(0, -1, 0),
+        Vec3.init(-1, 0, 0),
+        Vec3.init(0, 1, 0),
     };
     const signed = _angle.signed_area(&verts);
     try testing.expectApproxEqAbs(2.0 * pi, signed, 1e-13);

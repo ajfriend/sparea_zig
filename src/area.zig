@@ -17,9 +17,11 @@ const std = @import("std");
 const vec3 = @import("vec3.zig");
 const area_cross = @import("area_cross.zig");
 const area_angle = @import("area_angle.zig");
-const tol = @import("root.zig").tol;
+const root = @import("root.zig");
+const tol = root.tol;
 
 const Vec3 = vec3.Vec3;
+const Options = root.Options;
 
 // Polygon-level precondition checks shared by every public entry
 // point: at least 3 vertices, and no consecutive antipodal pair.
@@ -60,30 +62,35 @@ pub fn normalize_positive(area: f64) f64 {
     }
 }
 
-/// Area in steradians of a spherical polygon, in `[0, 4π)`.
+/// Area in steradians of a spherical polygon.
 ///
-/// Auto-dispatches between algorithms: hemisphere-contained
-/// polygons take the cross-product centroid-fan path; polygons
-/// that span more of the sphere fall back to the per-edge angle
-/// formula. The raw kernel result (signed, depending on
-/// orientation) is folded into the positive range before return —
-/// callers get the area of the region the polygon's traversal
-/// encloses, not a negative value. To recover the signed value,
-/// call `area_cross.signed_area` or `area_angle.signed_area`
-/// directly.
+/// `opts.algo` selects the kernel:
+///   - `.auto` (default) — hemisphere-contained polygons take the
+///     cross-product centroid-fan path; polygons that span more of
+///     the sphere fall back to the per-edge angle formula.
+///   - `.cross` — force the centroid-fan cross-product kernel.
+///   - `.angle` — force the per-edge angle-formula kernel.
+///
+/// `opts.signed` controls the output sign convention:
+///   - `false` (default) — fold the result into `[0, 4π)`. Reversing
+///     the vertex order yields the complementary region.
+///   - `true` — return the raw signed kernel output (positive for
+///     CCW-from-outside, negative otherwise).
 ///
 /// Returns `error.TooFewVertices` if the polygon has fewer than 3
 /// vertices, or `error.AntipodalEdge` if any consecutive vertex pair
 /// is (near-)antipodal.
-pub fn polygon_area(verts: []const Vec3) !f64 {
+pub fn polygon_area(verts: []const Vec3, opts: Options) !f64 {
     try check_edges(verts);
 
-    var signed: f64 = undefined;
-    if (is_hemisphere_contained(verts)) {
-        signed = area_cross.signed_area(verts);
-    } else {
-        signed = area_angle.signed_area(verts);
-    }
+    const signed = switch (opts.algo) {
+        .auto => if (is_hemisphere_contained(verts))
+            area_cross.signed_area(verts)
+        else
+            area_angle.signed_area(verts),
+        .cross => area_cross.signed_area(verts),
+        .angle => area_angle.signed_area(verts),
+    };
 
-    return normalize_positive(signed);
+    return if (opts.signed) signed else normalize_positive(signed);
 }

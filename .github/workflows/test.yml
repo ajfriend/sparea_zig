@@ -31,3 +31,20 @@ jobs:
       # run. CI here just verifies the test suite passes across the matrix.
       - name: zig build test
         run: zig build test
+
+  # Regression guard for the windows-msvc `sincos` issue: LLVM fuses
+  # adjacent @sin/@cos on the same value into a sincos() call, but
+  # MSVC's libm has no sincos. `src/windows_sincos.zig` provides the
+  # symbol; this job re-links the test binary against MSVC's libm to
+  # catch a regression at the link stage.
+  windows-msvc-link:
+    name: windows-msvc link
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: "0.15.2"
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: zig build test -Dtarget=x86_64-windows-msvc
+        run: zig build test -Dtarget=x86_64-windows-msvc

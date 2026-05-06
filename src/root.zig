@@ -1,8 +1,21 @@
 //! Public API for the sparea library.
 
+const builtin = @import("builtin");
+
 const _polygon = @import("polygon.zig");
 const _vec3 = @import("vec3.zig");
 const _latlng = @import("latlng.zig");
+
+// On windows-msvc, LLVM fuses adjacent `@sin`/`@cos` on the same
+// value into a `sincos` call, but MSVC's libm doesn't ship that
+// symbol. Pull in a shim that exports `sincos` so `libsparea.lib`
+// links cleanly. The `_ = @import(...)` triggers the shim's
+// top-level comptime `@export`. Other targets never see the file.
+comptime {
+    if (builtin.target.os.tag == .windows and builtin.target.abi == .msvc) {
+        _ = @import("windows_sincos.zig");
+    }
+}
 
 /// Errors raised by the sparea library.
 pub const SpareaError = error{

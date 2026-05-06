@@ -25,29 +25,29 @@ const vertex_fan_area = helpers.vertex_fan_area;
 
 test "4-vertex polygon = two adjacent octants" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(0, 0, 1),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
+        .init(0, -1, 0),
     };
     try expectApproxEqAbs(pi, try polygon_area(&verts), 1e-13);
 }
 
 test "4-vertex polygon with non-adjacent antipodal vertices" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, 0, 1),
     };
     try expectApproxEqAbs(pi, try polygon_area(&verts), 1e-13);
 }
 
 test "tight polygon dispatches to centroid-fan path" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
     };
     try testing.expectEqual(
         cross_area(&verts),
@@ -58,9 +58,9 @@ test "tight polygon dispatches to centroid-fan path" {
 
 test "angle formula matches centroid-fan on a non-degenerate hemispheric polygon" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
     };
     try expectApproxEqAbs(
         angle_area(&verts),
@@ -71,18 +71,18 @@ test "angle formula matches centroid-fan on a non-degenerate hemispheric polygon
 
 test "great-circle polygon (vertex sum = 0) dispatches to angle formula" {
     const ccw_from_above = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     try expectApproxEqAbs(2.0 * pi, try polygon_area(&ccw_from_above), 1e-13);
 
     const cw_from_above = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, -1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, 1, 0),
+        .init(1, 0, 0),
+        .init(0, -1, 0),
+        .init(-1, 0, 0),
+        .init(0, 1, 0),
     };
     try expectApproxEqAbs(2.0 * pi, try polygon_area(&cw_from_above), 1e-13);
 
@@ -101,14 +101,14 @@ test "great-circle polygon (vertex sum = 0) dispatches to angle formula" {
 
 test "orientation flip yields complementary region (small/centroid-fan polygon)" {
     const fwd = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
     };
     const rev = [_]Vec3{
-        Vec3.init(0, 0, 1),
-        Vec3.init(0, 1, 0),
-        Vec3.init(1, 0, 0),
+        .init(0, 0, 1),
+        .init(0, 1, 0),
+        .init(1, 0, 0),
     };
     // The two orientations enclose complementary regions, so the
     // magnitudes sum to 4π.
@@ -121,16 +121,16 @@ test "orientation flip yields complementary region (small/centroid-fan polygon)"
 
 test "orientation flip yields complementary region (global/angle-formula polygon)" {
     const fwd = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     const rev = [_]Vec3{
-        Vec3.init(0, -1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(1, 0, 0),
+        .init(0, -1, 0),
+        .init(-1, 0, 0),
+        .init(0, 1, 0),
+        .init(1, 0, 0),
     };
     // Equator ring: each orientation encloses one hemisphere (2π).
     try expectApproxEqAbs(
@@ -144,9 +144,9 @@ test "LatLng-derived Vec3 input matches direct Vec3 input on a hemispheric polyg
     // Octant traced as lat/lng (then converted) vs as Vec3 directly —
     // both should land on pi/2.
     const verts_v = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(0, 0, 1),
     };
     const verts_ll = [_]LatLng{
         .{ .lat = 0.0, .lng = 0.0 },
@@ -172,10 +172,10 @@ test "all 8 CCW octants give +π/2 from both kernels" {
     //     cross the antimeridian (the atan2(0, −x) = π flip).
     //     normalize_positive folds the latter back to +π/2.
     const eq = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     const np = Vec3.init(0, 0, 1);
     const sp = Vec3.init(0, 0, -1);
@@ -198,10 +198,10 @@ test "all 8 octants have area pi/2" {
     // pair of adjacent equator vertices closes with a pole into one of
     // the 8 octants of the sphere; each octant is 4π/8 = π/2 sr.
     const eq_v = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     const np_v = Vec3.init(0, 0, 1);
     const sp_v = Vec3.init(0, 0, -1);
@@ -224,27 +224,27 @@ test "all 8 octants have area pi/2" {
 
 test "polygon_area rejects an exactly-antipodal edge" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, 0, 1),
+        .init(1, 0, 0),
+        .init(-1, 0, 0),
+        .init(0, 0, 1),
     };
     try testing.expectError(error.AntipodalEdge, polygon_area(&verts));
 }
 
 test "polygon_area rejects a near-antipodal edge within tolerance" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
+        .init(1, 0, 0),
         Vec3.init(-1, 1e-7, 0).normalized(),
-        Vec3.init(0, 0, 1),
+        .init(0, 0, 1),
     };
     try testing.expectError(error.AntipodalEdge, polygon_area(&verts));
 }
 
 test "polygon_area accepts edge just outside the antipodal tolerance" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
+        .init(1, 0, 0),
         Vec3.init(-1, 1e-2, 0).normalized(),
-        Vec3.init(0, 0, 1),
+        .init(0, 0, 1),
     };
     _ = try polygon_area(&verts);
 }
@@ -253,10 +253,10 @@ test "polygon_area rejects polygons with fewer than 3 vertices" {
     const empty = [_]Vec3{};
     try testing.expectError(error.TooFewVertices, polygon_area(&empty));
 
-    const one = [_]Vec3{Vec3.init(1, 0, 0)};
+    const one = [_]Vec3{.init(1, 0, 0)};
     try testing.expectError(error.TooFewVertices, polygon_area(&one));
 
-    const two = [_]Vec3{ Vec3.init(1, 0, 0), Vec3.init(0, 1, 0) };
+    const two = [_]Vec3{ .init(1, 0, 0), .init(0, 1, 0) };
     try testing.expectError(error.TooFewVertices, polygon_area(&two));
 }
 

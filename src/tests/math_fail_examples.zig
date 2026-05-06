@@ -30,10 +30,10 @@ test "pole-to-pole lune: v0-fan cross-product returns 0; angle formula returns p
     // triangles (NP, E0, SP) and (NP, SP, E1) — both contain the
     // antipodal pair NP/SP, so each evaluates to 0.
     const verts = [_]Vec3{
-        Vec3.init(0, 0, 1), // NP
-        Vec3.init(1, 0, 0), // E0
-        Vec3.init(0, 0, -1), // SP
-        Vec3.init(0, 1, 0), // E1
+        .init(0, 0, 1), // NP
+        .init(1, 0, 0), // E0
+        .init(0, 0, -1), // SP
+        .init(0, 1, 0), // E1
     };
 
     try testing.expectEqual(@as(f64, 0.0), vertex_fan_area(&verts, 0));
@@ -48,10 +48,10 @@ test "equator-cornered quad: v0-fan cross-product returns 0; angle formula retur
     // equator. With v0 = E0, the v0-fan produces (E0, E1, E2) and
     // (E0, E2, NP) — both contain the antipodal pair E0/E2.
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0), // E0
-        Vec3.init(0, 1, 0), // E1
-        Vec3.init(-1, 0, 0), // E2
-        Vec3.init(0, 0, 1), // NP
+        .init(1, 0, 0), // E0
+        .init(0, 1, 0), // E1
+        .init(-1, 0, 0), // E2
+        .init(0, 0, 1), // NP
     };
 
     try testing.expectEqual(@as(f64, 0.0), vertex_fan_area(&verts, 0));

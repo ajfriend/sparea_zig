@@ -34,9 +34,9 @@ const std = @import("std");
 const sa = @import("sparea");
 
 const verts = [_]sa.Vec3{
-    sa.Vec3.init(1, 0, 0),
-    sa.Vec3.init(0, 1, 0),
-    sa.Vec3.init(0, 0, 1),
+    .init(1, 0, 0),
+    .init(0, 1, 0),
+    .init(0, 0, 1),
 };
 const area = try sa.polygon_area(&verts); // π/2
 ```

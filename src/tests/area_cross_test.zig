@@ -54,10 +54,10 @@ test "equator ring defeats every fan-of-vertex cross strategy; only angle gets i
     const helpers = @import("helpers.zig");
     const area_angle = @import("../area_angle.zig");
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     try testing.expectEqual(@as(f64, 0.0), area_cross.signed_area(&verts));
     for (0..verts.len) |k| {

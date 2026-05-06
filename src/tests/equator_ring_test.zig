@@ -23,10 +23,10 @@ test "equator ring (CCW from above): signed = -2pi, |area| = 2pi" {
     // the sphere on the northern side, so the signed result is
     // negative. `normalize_positive` adds 4π to recover the magnitude.
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, 1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, -1, 0),
+        .init(1, 0, 0),
+        .init(0, 1, 0),
+        .init(-1, 0, 0),
+        .init(0, -1, 0),
     };
     const signed = _angle.signed_area(&verts);
     try testing.expectApproxEqAbs(-2.0 * pi, signed, 1e-13);
@@ -43,16 +43,16 @@ test "bigger ring: angle and cross agree after normalize_positive" {
     const cl = @cos(lat);
     const sl = @sin(lat);
     const ccw = [_]Vec3{
-        Vec3.init(cl, 0, sl),
-        Vec3.init(0, cl, sl),
-        Vec3.init(-cl, 0, sl),
-        Vec3.init(0, -cl, sl),
+        .init(cl, 0, sl),
+        .init(0, cl, sl),
+        .init(-cl, 0, sl),
+        .init(0, -cl, sl),
     };
     const cw = [_]Vec3{
-        Vec3.init(cl, 0, sl),
-        Vec3.init(0, -cl, sl),
-        Vec3.init(-cl, 0, sl),
-        Vec3.init(0, cl, sl),
+        .init(cl, 0, sl),
+        .init(0, -cl, sl),
+        .init(-cl, 0, sl),
+        .init(0, cl, sl),
     };
 
     const a_ccw = _angle.signed_area(&ccw);
@@ -74,10 +74,10 @@ test "bigger ring: angle and cross agree after normalize_positive" {
 
 test "equator ring reversed: signed = +2pi" {
     const verts = [_]Vec3{
-        Vec3.init(1, 0, 0),
-        Vec3.init(0, -1, 0),
-        Vec3.init(-1, 0, 0),
-        Vec3.init(0, 1, 0),
+        .init(1, 0, 0),
+        .init(0, -1, 0),
+        .init(-1, 0, 0),
+        .init(0, 1, 0),
     };
     const signed = _angle.signed_area(&verts);
     try testing.expectApproxEqAbs(2.0 * pi, signed, 1e-13);
